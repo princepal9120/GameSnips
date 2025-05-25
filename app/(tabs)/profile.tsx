@@ -1,110 +1,151 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Header } from '@/components/Header';
+import { SnippetCard } from '@/components/SnippetCard';
+import { useSnippetStore } from '@/store/snippetStore';
+import { COLORS } from '@/constants/colors';
+import { SPACING } from '@/constants/spacing';
+import { User } from 'lucide-react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
+  const { snippets, clearSnippets } = useSnippetStore();
 
-export default function TabTwoScreen() {
+  // For simplicity, we'll just show all snippets as if they're from the user
+  // In a real app, you would filter based on the logged-in user
+  const userSnippets = snippets;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Header title="Profile" />
+
+      <View style={styles.profileSection}>
+        <View style={styles.avatarContainer}>
+          <User size={40} color={COLORS.white} />
+        </View>
+        <Text style={styles.username}>Game Enthusiast</Text>
+        <Text style={styles.bio}>Sharing my favorite gaming moments</Text>
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{userSnippets.length}</Text>
+            <Text style={styles.statLabel}>Snippets</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{userSnippets.reduce((acc, curr) => acc + curr.likes, 0)}</Text>
+            <Text style={styles.statLabel}>Likes</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.clearButton} onPress={clearSnippets}>
+          <Text style={styles.clearButtonText}>Clear All Snippets</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionTitle}>My Snippets</Text>
+
+      {userSnippets.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>You haven't created any snippets yet.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={userSnippets}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <SnippetCard snippet={item} />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.gray[50],
   },
-  titleContainer: {
+  profileSection: {
+    backgroundColor: COLORS.white,
+    padding: SPACING.md,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.primary[500],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  username: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 20,
+    color: COLORS.gray[900],
+  },
+  bio: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: COLORS.gray[600],
+    marginTop: SPACING.xs,
+  },
+  statsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    marginTop: SPACING.md,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  statItem: {
+    alignItems: 'center',
+    marginHorizontal: SPACING.md,
+  },
+  statNumber: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 18,
+    color: COLORS.primary[500],
+  },
+  statLabel: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: COLORS.gray[600],
+  },
+  clearButton: {
+    marginTop: SPACING.md,
+    padding: SPACING.xs,
+    backgroundColor: COLORS.error[50],
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: COLORS.error[600],
+  },
+  sectionTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 18,
+    color: COLORS.gray[900],
+    margin: SPACING.md,
+  },
+  listContent: {
+    padding: SPACING.md,
+    paddingBottom: SPACING.xxxl,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  emptyStateText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: COLORS.gray[600],
+    textAlign: 'center',
   },
 });
