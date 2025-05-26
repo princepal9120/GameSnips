@@ -1,15 +1,25 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { Home, PlusCircle, User } from 'lucide-react-native';
-import { COLORS } from '@/constants/colors';
+import { Chrome as Home, CirclePlus as PlusCircle, User, Settings } from 'lucide-react-native';
+import { useThemeStore } from '@/store/themeStore';
+import { lightTheme, darkTheme } from '@/constants/theme';
 
 export default function TabLayout() {
+  const isDark = useThemeStore((state) => state.isDark);
+  const theme = isDark ? darkTheme : lightTheme;
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary[500],
-        tabBarInactiveTintColor: COLORS.gray[400],
-        tabBarStyle: styles.tabBar,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.tabBarInactive,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: theme.tabBar,
+            borderTopColor: theme.border,
+          }
+        ],
         tabBarLabelStyle: styles.tabBarLabel,
         headerShown: false,
       }}>
@@ -40,14 +50,21 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <Settings size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.white,
-    borderTopColor: COLORS.gray[200],
     height: 60,
     paddingBottom: 8,
   },
