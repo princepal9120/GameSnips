@@ -3,9 +3,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Heart } from 'lucide-react-native';
 import { useSnippetStore } from '@/store/snippetStore';
+import { useThemeStore } from '@/store/themeStore';
 import { COLORS } from '@/constants/colors';
 import { SPACING } from '@/constants/spacing';
 import { formatDate } from '@/utils/helpers';
+import { lightTheme, darkTheme } from '@/constants/theme';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 export default function SnippetDetailScreen() {
@@ -13,16 +15,15 @@ export default function SnippetDetailScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { snippets, toggleLike } = useSnippetStore();
+    const isDark = useThemeStore(state => state.isDark);
+    const theme = isDark ? darkTheme : lightTheme;
 
     const snippet = snippets.find(s => s.id === id);
-
     const scale = useSharedValue(1);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-        };
-    });
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
 
     const handleLike = () => {
         if (!snippet) return;
@@ -36,26 +37,20 @@ export default function SnippetDetailScreen() {
 
     if (!snippet) {
         return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <Text style={styles.errorText}>Snippet not found</Text>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                >
-                    <Text style={styles.backButtonText}>Go Back</Text>
+            <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
+                <Text style={[styles.errorText, { color: theme.error }]}>Snippet not found</Text>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <Text style={{ color: theme.primary, fontFamily: 'Inter-SemiBold' }}>Go Back</Text>
                 </TouchableOpacity>
             </View>
         );
     }
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                >
-                    <ArrowLeft size={24} color={COLORS.gray[800]} />
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
 
                 <Image
@@ -66,30 +61,32 @@ export default function SnippetDetailScreen() {
 
                 <View style={styles.content}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>{snippet.title}</Text>
+                        <Text style={[styles.title, { color: theme.text }]}>{snippet.title}</Text>
                         <TouchableOpacity onPress={handleLike}>
                             <Animated.View style={animatedStyle}>
                                 <Heart
                                     size={28}
-                                    color={COLORS.primary[500]}
-                                    fill={snippet.likes > 0 ? COLORS.primary[500] : 'transparent'}
+                                    color={theme.primary}
+                                    fill={snippet.likes > 0 ? theme.primary : 'transparent'}
                                 />
                             </Animated.View>
                         </TouchableOpacity>
                     </View>
 
-                    <Text style={styles.creator}>By {snippet.creatorName}</Text>
-                    <Text style={styles.date}>{formatDate(snippet.timestamp)}</Text>
+                    <Text style={[styles.creator, { color: theme.subtext }]}>By {snippet.creatorName}</Text>
+                    <Text style={[styles.date, { color: theme.muted }]}>
+                        {formatDate(snippet.timestamp)}
+                    </Text>
 
-                    <View style={styles.statsRow}>
+                    <View style={[styles.statsRow, { borderColor: theme.border }]}>
                         <View style={styles.stat}>
-                            <Heart size={16} color={COLORS.primary[500]} fill={COLORS.primary[500]} />
-                            <Text style={styles.statText}>{snippet.likes} likes</Text>
+                            <Heart size={16} color={theme.primary} fill={theme.primary} />
+                            <Text style={[styles.statText, { color: theme.subtext }]}>{snippet.likes} likes</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.descriptionLabel}>Description</Text>
-                    <Text style={styles.description}>{snippet.description}</Text>
+                    <Text style={[styles.descriptionLabel, { color: theme.text }]}>Description</Text>
+                    <Text style={[styles.description, { color: theme.subtext }]}>{snippet.description}</Text>
                 </View>
             </ScrollView>
         </View>
@@ -99,7 +96,6 @@ export default function SnippetDetailScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.white,
     },
     scrollContent: {
         flexGrow: 1,
@@ -112,10 +108,6 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.white,
         borderRadius: 20,
         padding: 8,
-    },
-    backButtonText: {
-        fontFamily: 'Inter-SemiBold',
-        color: COLORS.primary[500],
     },
     image: {
         width: '100%',
@@ -133,20 +125,17 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: 'Inter-Bold',
         fontSize: 24,
-        color: COLORS.gray[900],
         flex: 1,
         marginRight: SPACING.sm,
     },
     creator: {
         fontFamily: 'Inter-SemiBold',
         fontSize: 16,
-        color: COLORS.gray[700],
         marginBottom: SPACING.xs,
     },
     date: {
         fontFamily: 'Inter-Regular',
         fontSize: 14,
-        color: COLORS.gray[500],
         marginBottom: SPACING.md,
     },
     statsRow: {
@@ -154,8 +143,7 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.md,
         paddingVertical: SPACING.sm,
         borderTopWidth: 1,
-        borderBottomWidth: SPACING.xs,
-        borderColor: COLORS.gray[200],
+        borderBottomWidth: 1,
     },
     stat: {
         flexDirection: 'row',
@@ -165,25 +153,21 @@ const styles = StyleSheet.create({
     statText: {
         fontFamily: 'Inter-SemiBold',
         fontSize: 14,
-        color: COLORS.gray[700],
         marginLeft: 4,
     },
     descriptionLabel: {
         fontFamily: 'Inter-Bold',
         fontSize: 18,
-        color: COLORS.gray[900],
         marginBottom: SPACING.xs,
     },
     description: {
         fontFamily: 'Inter-Regular',
         fontSize: 16,
-        color: COLORS.gray[800],
         lineHeight: 24,
     },
     errorText: {
         fontFamily: 'Inter-SemiBold',
         fontSize: 18,
-        color: COLORS.error[500],
         textAlign: 'center',
         marginTop: SPACING.xl,
     },

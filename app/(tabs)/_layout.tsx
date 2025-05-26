@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { Chrome as Home, CirclePlus as PlusCircle, User, Settings } from 'lucide-react-native';
+import { Home, CirclePlus as PlusCircle, User, Settings } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { lightTheme, darkTheme } from '@/constants/theme';
 
@@ -26,7 +26,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Feed',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Home size={size} color={color} />
           ),

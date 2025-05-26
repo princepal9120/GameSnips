@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
 }));
 
-
+// Listen for auth state changes
 onAuthStateChanged(auth, (user) => {
   useAuthStore.setState({ user, loading: false });
 });

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { lightTheme, darkTheme } from '@/constants/theme';
 import { SPACING } from '@/constants/spacing';
+import { COLORS } from '@/constants/colors';
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -99,11 +100,11 @@ export default function LoginScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.links}>
-                    <Link href="/auth/reset-password" style={[styles.link, { color: theme.primary }]}>
-                        Forgot Password?
-                    </Link>
+                    <Text style={[styles.linkText, { color: theme.textSecondary }]}>
+                        Dont have an account?{' '}
+                    </Text>
                     <Link href="/auth/signup" style={[styles.link, { color: theme.primary }]}>
-                        Create Account
+                        Sign Up
                     </Link>
                 </View>
             </View>
@@ -177,6 +178,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: SPACING.lg,
+    },
+    linkText: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
     },
     link: {
         fontFamily: 'Inter-SemiBold',

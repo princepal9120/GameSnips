@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { SnippetCard } from '@/components/SnippetCard';
 import { Header } from '@/components/Header';
 import { useSnippetStore } from '@/store/snippetStore';
+import { useThemeStore } from '@/store/themeStore';
+import { lightTheme, darkTheme } from '@/constants/theme';
 import { COLORS } from '@/constants/colors';
 import { SPACING } from '@/constants/spacing';
 
@@ -13,6 +15,8 @@ export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const { snippets, fetchSnippets } = useSnippetStore();
+  const isDark = useThemeStore((state) => state.isDark);
+  const theme = isDark ? darkTheme : lightTheme;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -25,7 +29,7 @@ export default function FeedScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
       <Header title="GameSnips" />
       <FlatList
         data={snippets}
@@ -42,8 +46,9 @@ export default function FeedScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[COLORS.primary[500]]}
-            tintColor={COLORS.primary[500]}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+            progressBackgroundColor={theme.card}
           />
         }
         initialNumToRender={5}
@@ -57,7 +62,6 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
   },
   listContent: {
     padding: SPACING.md,

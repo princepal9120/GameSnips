@@ -16,6 +16,8 @@ import { useRouter } from 'expo-router';
 import { Header } from '@/components/Header';
 import { ImageSelector } from '@/components/ImageSelector';
 import { useSnippetStore } from '@/store/snippetStore';
+import { useThemeStore } from '@/store/themeStore';
+import { lightTheme, darkTheme } from '@/constants/theme';
 import { COLORS } from '@/constants/colors';
 import { SPACING } from '@/constants/spacing';
 import { generateId } from '@/utils/helpers';
@@ -24,7 +26,9 @@ export default function CreateScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { addSnippet } = useSnippetStore();
-  
+  const isDark = useThemeStore((state) => state.isDark);
+  const theme = isDark ? darkTheme : lightTheme;
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [creatorName, setCreatorName] = useState('');
@@ -86,15 +90,15 @@ export default function CreateScreen() {
 
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
       addSnippet(newSnippet);
-      
+
       Alert.alert('Success', 'Your snippet has been created!');
-      
+
       // Reset form
       setTitle('');
       setDescription('');
       setCreatorName('');
       setSelectedImage('');
-      
+
       // Navigate back to feed
       router.push('/(tabs)');
     } catch (error) {
@@ -105,58 +109,73 @@ export default function CreateScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { paddingTop: insets.top }]} 
+    <KeyboardAvoidingView
+      style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <Header title="Create Snippet" />
-      
-      <ScrollView 
+
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Title</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Title</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, {
+              backgroundColor: theme.card,
+              color: theme.text,
+              borderColor: theme.border
+            }]}
             value={title}
             onChangeText={setTitle}
             placeholder="Enter snippet title"
+            placeholderTextColor={theme.textSecondary}
             maxLength={50}
           />
           {errors.title ? <Text style={styles.errorText}>{errors.title}</Text> : null}
-          <Text style={styles.charCount}>{title.length}/50</Text>
+          <Text style={[styles.charCount, { color: theme.textSecondary }]}>{title.length}/50</Text>
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Description</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, {
+              backgroundColor: theme.card,
+              color: theme.text,
+              borderColor: theme.border
+            }]}
             value={description}
             onChangeText={setDescription}
             placeholder="Describe your game snippet"
+            placeholderTextColor={theme.textSecondary}
             multiline
             maxLength={150}
           />
           {errors.description ? <Text style={styles.errorText}>{errors.description}</Text> : null}
-          <Text style={styles.charCount}>{description.length}/150</Text>
+          <Text style={[styles.charCount, { color: theme.textSecondary }]}>{description.length}/150</Text>
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Your Name (optional)</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Your Name (optional)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, {
+              backgroundColor: theme.card,
+              color: theme.text,
+              borderColor: theme.border
+            }]}
             value={creatorName}
             onChangeText={setCreatorName}
             placeholder="Enter your name"
+            placeholderTextColor={theme.textSecondary}
           />
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Select an Image</Text>
-          <ImageSelector 
+          <Text style={[styles.label, { color: theme.text }]}>Select an Image</Text>
+          <ImageSelector
             selectedImage={selectedImage}
             onSelectImage={setSelectedImage}
           />
@@ -166,15 +185,16 @@ export default function CreateScreen() {
         <TouchableOpacity
           style={[
             styles.submitButton,
+            { backgroundColor: theme.primary },
             isLoading && styles.submitButtonDisabled
           ]}
           onPress={handleSubmit}
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={theme.card} />
           ) : (
-            <Text style={styles.submitButtonText}>Create Snippet</Text>
+            <Text style={[styles.submitButtonText, { color: theme.card }]}>Create Snippet</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -185,7 +205,6 @@ export default function CreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
   },
   scrollView: {
     flex: 1,
@@ -201,15 +220,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     marginBottom: SPACING.xs,
-    color: COLORS.gray[800],
   },
   input: {
-    backgroundColor: COLORS.gray[100],
     borderRadius: 8,
     padding: SPACING.sm,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: COLORS.gray[900],
+    borderWidth: 1,
   },
   textArea: {
     minHeight: 100,
@@ -222,24 +239,21 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   charCount: {
-    color: COLORS.gray[500],
     fontFamily: 'Inter-Regular',
     fontSize: 12,
     marginTop: 4,
     textAlign: 'right',
   },
   submitButton: {
-    backgroundColor: COLORS.primary[500],
     borderRadius: 8,
     padding: SPACING.md,
     alignItems: 'center',
     marginTop: SPACING.md,
   },
   submitButtonDisabled: {
-    backgroundColor: COLORS.primary[300],
+    opacity: 0.5,
   },
   submitButtonText: {
-    color: COLORS.white,
     fontFamily: 'Inter-Bold',
     fontSize: 16,
   },

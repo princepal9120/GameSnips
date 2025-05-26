@@ -1,41 +1,64 @@
+// store/themeStore.js
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance } from 'react-native';
 
-type Theme = 'light' | 'dark' | 'system';
+// Get initial system theme
+const getSystemTheme = () => {
+  try {
+    return Appearance.getColorScheme() === 'dark';
+  } catch (error) {
+    return false; // Default to light theme if error
+  }
+};
 
-interface ThemeState {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  isDark: boolean;
-}
-
-export const useThemeStore = create<ThemeState>()(
+export const useThemeStore = create(
   persist(
     (set, get) => ({
-      theme: 'system',
-      isDark: Appearance.getColorScheme() === 'dark',
-      setTheme: (theme: Theme) => {
-        set({ 
-          theme,
-          isDark: theme === 'system' 
-            ? Appearance.getColorScheme() === 'dark'
-            : theme === 'dark'
-        });
+      theme: 'system', // 'light', 'dark', 'system'
+      isDark: getSystemTheme(),
+
+      setTheme: (newTheme) => {
+        let isDark;
+        if (newTheme === 'system') {
+          isDark = getSystemTheme();
+        } else {
+          isDark = newTheme === 'dark';
+        }
+        set({ theme: newTheme, isDark });
       },
     }),
     {
       name: 'theme-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      // Add error handling for storage
+      onRehydrateStorage: () => (state) => {
+        if (state && state.theme === 'system') {
+          state.isDark = getSystemTheme();
+        }
+      },
     }
   )
 );
 
+// Listen to system theme changes - but don't cause re-renders during initialization
+let isInitialized = false;
 
-Appearance.addChangeListener(({ colorScheme }) => {
-  const themeStore = useThemeStore.getState();
-  if (themeStore.theme === 'system') {
-    themeStore.setTheme('system');
+const themeChangeListener = ({ colorScheme }) => {
+  if (!isInitialized) {
+    isInitialized = true;
+    return;
   }
-});
+
+  const { theme } = useThemeStore.getState();
+  if (theme === 'system') {
+    useThemeStore.setState({ isDark: colorScheme === 'dark' });
+  }
+};
+
+// Add listener after a small delay to avoid initialization issues
+setTimeout(() => {
+  Appearance.addChangeListener(themeChangeListener);
+  isInitialized = true;
+}, 100);
